@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Weather Details</title>
+</head>
+<body>
+  <h1>Weather Details for <span id="cityName"></span></h1>
+  <p>Temperature: <span id="temperature"></span>°C</p>
+  <p>Weather: <span id="weatherDescription"></span></p>
+
+  <script>
+    // Retrieve weatherData and chatId from the URL query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const city = urlParams.get("city");
+    const chatId = urlParams.get("chatId");
+  
+    // Use the city parameter to fetch weather data from the server
+    fetch(`/weather/${city}`)
+      .then((response) => response.json())
+      .then((weatherData) => {
+        const cityName = document.getElementById("cityName");
+        const temperature = document.getElementById("temperature");
+        const weatherDescription = document.getElementById("weatherDescription");
+  
+        cityName.textContent = weatherData.name;
+        temperature.textContent = weatherData.main.temp;
+        weatherDescription.textContent = weatherData.weather[0].description;
+  
+        // Send weather data to your Telegram bot
+        sendWeatherToTelegram(chatId, weatherData);
+      })
+      .catch((error) => {
+        console.error("Error fetching weather data:", error);
+      });
+  
+    // Function to send weather data to the Telegram bot
+    function sendWeatherToTelegram(chatId, weatherData) {
+      // Make an HTTP request or use the Telegram Bot API library to send the data to your bot
+      // Example using axios:
+      axios.post(`https://api.telegram.org/bot6431383631:AAE4wuUb4N31e7r29wAiaG8dlypJ6KDMDs4/sendMessage`, {
+        chat_id: chatId,
+        text: `Weather: ${weatherData.weather[0].description}\nTemperature: ${weatherData.main.temp}°C`,
+      })
+      .then((response) => {
+        console.log("Message sent to Telegram bot:", response.data);
+      })
+      .catch((error) => {
+        console.error("Error sending message to Telegram bot:", error);
+      });
+    }
+  </script>
+  
+  
+</body>
+</html>

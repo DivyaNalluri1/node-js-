@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Game</title>
+</head>
+<body>
+    <h1>Typing Game</h1>
+    <p id="word-display">Random Word</p>
+    <input type="text" id="word-input" placeholder="Type the word here">
+    <div id="message"></div>
+
+    <script>
+        const words = ['apple', 'banana', 'cherry', 'grape', 'orange', 'pear', 'strawberry', 'watermelon'];
+
+        // Initialize variables
+        let currentWordIndex = 0;
+        let wrongWordsCount = 0;
+
+        // DOM elements
+        const wordDisplay = document.getElementById('word-display');
+        const wordInput = document.getElementById('word-input');
+        const message = document.getElementById('message');
+
+        // Initialize the first random word
+        showNextRandomWord();
+
+        // Event listener for user input
+        wordInput.addEventListener('input', () => {
+            const userInput = wordInput.value.trim().toLowerCase();
+            const currentWord = words[currentWordIndex];
+
+            if (userInput === currentWord) {
+                // Correct word typed, move to the next word
+                currentWordIndex++;
+                wordInput.value = '';
+                message.textContent = '';
+
+                if (currentWordIndex < words.length) {
+                    // Display the next random word
+                    showNextRandomWord();
+                } else {
+                    // All words have been typed
+                    message.textContent = 'Game Over';
+                    // Optionally, you can take other actions here.
+                }
+            } else {
+                // Wrong word typed
+                wrongWordsCount++;
+
+                if (wrongWordsCount >= 3) {
+                    message.textContent = 'Game Over';
+                    // Optionally, you can take other actions here.
+                } else {
+                    message.textContent = 'Wrong word!';
+                }
+            }
+        });
+
+        // Function to display the next random word
+        function showNextRandomWord() {
+            if (currentWordIndex < words.length) {
+                wordDisplay.textContent = words[currentWordIndex];
+            }
+        }
+    </script>
+</body>
+</html>

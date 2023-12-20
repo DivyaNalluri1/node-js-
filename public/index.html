@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Add your meta tags and title here -->
+    <style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3p_LKgoUT6ilmL9ye8LpfYTFzDll2XKjuvFwwA1v4tzVIJGkuN3xJ81dbSwHdHmTLvNo&usqp=CAU");
+        width: 100%;
+        background-repeat: no-repeat;
+        background-size: cover;
+        
+    }
+    .heads{
+        color:white;
+    }
+    .head2{
+   
+        float: right;
+        font-weight: bolder;
+        font-size: 50px;
+        margin-right: 150px;
+        color:gold;
+        text-shadow: 1px 1px 2px black, 0 0 25px rgb(0, 38, 255), 0 0 5px darkblue;
+        
+    }
+    .head3
+    {
+         float: right;
+        font-weight: bolder;
+        font-size: 50px;
+        margin-right: -120px;
+        color:gold;
+        text-shadow: 1px 1px 2px black, 0 0 25px rgb(0, 38, 255), 0 0 5px darkblue;
+        
+
+    }
+    #startButton{
+        width: 20%;
+        height:35px;
+        color: red;
+        font-size: 25px;
+        text-align: center;
+        margin-left: -20%;
+
+    }
+    #inputWord{
+        color: black;
+        width:20%;
+        height: 30px;
+        
+    }
+    #word{
+        color:red ;
+        font-size: 35px;
+        height: 30px; 
+       margin-top:20px;
+
+    }
+    .ima{
+        width: 30%;
+        float: left;
+        height: 25%;
+    }
+    #result {
+        color: gold;
+        font-size: 40px;
+    }
+    #history {
+        color: cornflowerblue;
+    }
+</style>
+</head>
+<body>
+    <h1 class="heads">Welcome</h1><br><br>
+    <img class="ima" src="https://cdn3d.iconscout.com/3d/premium/thumb/man-say-hi-6624077-5552823.png?f=webp">
+    <p class="head2">T&nbsp;&nbsp;&nbsp;&nbsp;<br>y&nbsp;&nbsp;&nbsp;&nbsp;<br>p&nbsp;&nbsp;&nbsp;&nbsp;<br>i&nbsp;&nbsp;&nbsp;&nbsp;<br>n&nbsp;&nbsp;&nbsp;&nbsp;<br>g&nbsp;&nbsp;&nbsp;&nbsp;</p>
+    <p class="head3">G<br>a<br>m<br>e<br></p><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <button id="startButton">Start Game</button>
+    <p id="word"></p>
+    <input type="text" id="inputWord" style="display: none;">
+    <p id="result"></p>
+    <div id="history">
+        <h2>history</h2>
+        <ul id="wordHistory"></ul>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.0/firebase-firestore.js"></script>
+
+    <script>
+        // Initialize Firebase with your Firebase project config
+        const firebaseConfig = {
+             
+                apiKey : "AIzaSyDJ3vYXbJkxG76fxYqjqYJ5HM2ZK7BFrzc",
+                authDomain: "uplifted-engine-388107.firebaseapp.com",
+                projectId: "uplifted-engine-388107",
+                storageBucket: "uplifted-engine-388107.appspot.com",
+                messagingSenderId: "738666996243",
+                appId: "1:738666996243:web:3f62d6b8afa23e590295e6",
+                measurementId: "G-T0PPZWZS9M"
+              };
+            
+        
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        const db = firebase.firestore();
+
+        // Rest of your existing JavaScript code
+        // ...
+        let wordList = [];
+        let currentIndex = 0;
+        let startTime, endTime;
+        let gameOver = false;
+        let incorrectAttempts = 0;
+        const typedWordsHistory = [];
+
+        const startButton = document.getElementById("startButton");
+        const wordElement = document.getElementById("word");
+        const inputElement = document.getElementById("inputWord");
+        const resultElement = document.getElementById("result");
+        const wordHistoryElement = document.getElementById("wordHistory");
+
+        startButton.addEventListener("click", startGame);
+
+        function startGame() {
+            currentIndex = 0;
+            gameOver = false;
+            startButton.style.display = "none";
+            inputElement.style.display = "block";
+            loadWordsFromFile("words.txt");
+        }
+
+
+        function loadWordsFromFile(filePath) {
+            fetch(filePath)
+                .then((response) => response.text())
+                .then((data) => {
+                    wordList = data.split("\n").filter((word) => word.trim() !== "");
+                    shuffleArray(wordList);
+                    nextWord();
+                })
+                .catch((error) => {
+                    console.error("Error loading words from file:", error);
+                });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function nextWord() {
+            if (!gameOver && currentIndex < wordList.length) {
+                wordElement.innerText = wordList[currentIndex];
+                startTime = new Date();
+            } else if (!gameOver) {
+                endGame();
+            }
+        }
+
+        inputElement.addEventListener("input", checkInput);
+        function checkInput() {
+            const typedInput = inputElement.value.trim();
+            const currentWord = wordList[currentIndex].trim();
+            
+            if (!gameOver && typedInput === currentWord) {
+                endTime = new Date();
+                const elapsedTime = (endTime - startTime) / 1000;
+
+                
+                typedWordsHistory.push({
+                    word: typedInput,
+                    time: elapsedTime
+                });
+
+                
+                displayTypedWordsHistory();
+
+                resultElement.innerText = `Correct! Time taken: ${elapsedTime} seconds.`;
+                inputElement.value = ""; 
+                currentIndex++; 
+                setTimeout(() => {
+                    resultElement.innerText = "";
+                    nextWord();
+                }, 1000);
+            } else if (!gameOver && currentWord.startsWith(typedInput)) {
+                
+            } else if (!gameOver) {
+                gameOver = true;
+                endGame();
+            }
+        }
+
+        function displayTypedWordsHistory() {
+            wordHistoryElement.innerHTML = "";
+            typedWordsHistory.forEach((item) => {
+                const listItem = document.createElement("li");
+                listItem.innerText = `${item.word} (${item.time} seconds)`;
+                wordHistoryElement.appendChild(listItem);
+
+                // Save typed words history to Firestore
+                db.collection("ttt").add({
+                    word: item.word,
+                    time: item.time
+                })
+                .then((docRef) => {
+                    console.log("Typed word saved with ID: ", docRef.id);
+                })
+                .catch((error) => {
+                    console.error("Error adding typed word: ", error);
+                });
+            });
+        }
+
+        // Rest of your JavaScript code
+        // ...
+        function endGame() {
+            gameOver = true;
+            inputElement.style.display = "none";
+            wordElement.innerText = "Game over!";
+            startButton.style.display = "block";
+        }
+    </script>
+</body>
+</html>
